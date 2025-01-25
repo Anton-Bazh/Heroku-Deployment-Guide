@@ -1,61 +1,65 @@
-# Manual Profesional para Subir y Actualizar una Aplicación en Heroku
+# Manual detallado para subir y mantener una aplicación en Heroku
 
 ## Índice
-
-1. [Requisitos previos](#requisitos-previos)
-2. [Subir una aplicación a Heroku](#subir-una-aplicación-a-heroku)
-   - 2.1. Crear un archivo `requirements.txt`
-   - 2.2. Crear un archivo `Procfile`
-   - 2.3. Inicializar un repositorio Git
-   - 2.4. Crear una aplicación en Heroku
-   - 2.5. Configurar el repositorio con Heroku
-   - 2.6. Realizar el despliegue
-3. [Actualizar una aplicación en Heroku](#actualizar-una-aplicación-en-heroku)
-   - 3.1. Realizar cambios en el proyecto
-   - 3.2. Confirmar los cambios con Git
-   - 3.3. Subir los cambios a Heroku
-4. [Notas adicionales](#notas-adicionales)
+1. [Preparación del proyecto](#1-preparación-del-proyecto)
+    - 1.1. Crear el archivo `requirements.txt`
+    - 1.2. Crear el archivo `Procfile`
+    - 1.3. Configurar el archivo `.gitignore`
+2. [Inicializar Git y conectar con Heroku](#2-inicializar-git-y-conectar-con-heroku)
+    - 2.1. Inicializar un repositorio Git
+    - 2.2. Crear una aplicación en Heroku
+    - 2.3. Configurar el remoto de Heroku en Git
+3. [Desplegar la aplicación en Heroku](#3-desplegar-la-aplicación-en-heroku)
+4. [Actualizar la aplicación](#4-actualizar-la-aplicación)
+5. [Notas adicionales](#5-notas-adicionales)
 
 ---
 
-## Requisitos previos
+## 1. Preparación del proyecto
 
-Antes de comenzar, asegúrate de cumplir con los siguientes requisitos:
-
-- Tener una cuenta en [Heroku](https://www.heroku.com/).
-- Tener instalado [Git](https://git-scm.com/) en tu sistema.
-- Tener instalado [Python](https://www.python.org/downloads/) y `pip` en tu sistema.
-- Una tarjeta de crédito registrada en Heroku (necesaria incluso para el plan gratuito).
-
----
-
-## Subir una aplicación a Heroku
-
-### 2.1. Crear un archivo `requirements.txt`
-
-Este archivo especifica las dependencias necesarias para tu aplicación. Puedes generarlo automáticamente con el siguiente comando en tu terminal:
+### 1.1. Crear el archivo `requirements.txt`
+Este archivo lista las dependencias de tu aplicación. Para generarlo automáticamente, utiliza el siguiente comando en tu terminal:
 
 ```bash
 pip freeze > requirements.txt
 ```
 
-Asegúrate de que todas las dependencias necesarias estén listadas correctamente en este archivo.
+Esto generará un archivo `requirements.txt` con todas las bibliotecas instaladas en tu entorno virtual. Asegúrate de que contenga todas las dependencias necesarias para tu aplicación.
 
-### 2.2. Crear un archivo `Procfile`
+### 1.2. Crear el archivo `Procfile`
+El `Procfile` le indica a Heroku cómo ejecutar tu aplicación. Este archivo debe:
 
-El `Procfile` le indica a Heroku cómo ejecutar tu aplicación. Crea un archivo llamado `Procfile` (sin extensión) en la raíz de tu proyecto. 
+- Estar en el directorio raíz del proyecto.
+- Guardarse en formato UTF-8 con terminaciones de línea LF (Line Feed).
+- No tener extensión (solo "Procfile").
 
-El contenido típico para una aplicación Flask es:
+Ejemplo de contenido:
 
-```
+```plaintext
 web: gunicorn app:app
 ```
 
-- **Nota:** Asegúrate de guardar este archivo con codificación **UTF-8** y formato de salto de línea **LF**.
+Aquí, `app:app` se refiere al archivo `app.py` y a la instancia de Flask llamada `app`.
 
-### 2.3. Inicializar un repositorio Git
+### 1.3. Configurar el archivo `.gitignore`
+Para evitar subir archivos innecesarios a Git, crea un archivo `.gitignore` con el siguiente contenido como base:
 
-Si aún no tienes un repositorio Git inicializado, hazlo con estos comandos en tu terminal:
+```plaintext
+*.pyc
+__pycache__/
+env/
+venv/
+.DS_Store
+```
+
+Esto excluirá archivos temporales y carpetas de entornos virtuales.
+
+---
+
+## 2. Inicializar Git y conectar con Heroku
+
+### 2.1. Inicializar un repositorio Git
+Si no tienes un repositorio Git inicializado, hazlo con estos comandos:
 
 ```bash
 git init
@@ -63,101 +67,118 @@ git add .
 git commit -m "Initial commit"
 ```
 
-### 2.4. Crear una aplicación en Heroku
-
-Inicia sesión en Heroku con el siguiente comando:
+### 2.2. Crear una aplicación en Heroku
+Asegúrate de haber iniciado sesión en Heroku:
 
 ```bash
 heroku login
 ```
 
-Esto abrirá una ventana en tu navegador para que inicies sesión. Luego, crea una nueva aplicación en Heroku con:
+Esto abrirá una ventana en tu navegador para que ingreses tus credenciales. Nota: Aunque Heroku ofrece un plan gratuito, necesitarás asociar una tarjeta de crédito a tu cuenta para habilitar ciertas funcionalidades.
+
+Luego, crea una nueva aplicación en Heroku con este comando:
 
 ```bash
-heroku create nombre-de-tu-app
+heroku create tu-nombre-app
 ```
 
-- Si no especificas un nombre, Heroku generará uno automáticamente.
+Si no especificas un nombre, Heroku generará uno automáticamente.
 
-### 2.5. Configurar el repositorio con Heroku
-
-Conecta tu repositorio local con la aplicación en Heroku creada previamente:
+### 2.3. Configurar el remoto de Heroku en Git
+Conecta tu repositorio local con la aplicación de Heroku creada:
 
 ```bash
-heroku git:remote -a nombre-de-tu-app
+heroku git:remote -a tu-nombre-app
 ```
 
-Verifica que Heroku esté configurado como remoto con:
+Verifica que Heroku esté configurado como remoto:
 
 ```bash
 git remote -v
 ```
 
-Esto debería mostrar algo como:
+Esto debería mostrar algo similar a:
 
+```plaintext
+heroku  https://git.heroku.com/tu-nombre-app.git (fetch)
+heroku  https://git.heroku.com/tu-nombre-app.git (push)
 ```
-heroku  https://git.heroku.com/nombre-de-tu-app.git (fetch)
-heroku  https://git.heroku.com/nombre-de-tu-app.git (push)
-```
 
-### 2.6. Realizar el despliegue
+Si no aparece, vuelve a ejecutar el comando anterior.
 
-Envía tu código a Heroku con el siguiente comando:
+---
+
+## 3. Desplegar la aplicación en Heroku
+
+Para desplegar tu aplicación, usa el siguiente comando:
 
 ```bash
 git push heroku main
 ```
 
-- **Nota:** Si tu rama principal se llama `master`, reemplaza `main` por `master` en el comando anterior. Puedes verificar el nombre de tu rama con:
+Nota: Si tu rama principal se llama `master` en lugar de `main`, utiliza:
 
 ```bash
-git branch
+git push heroku master
 ```
+
+Heroku detectará automáticamente los cambios y desplegará tu aplicación. Una vez completado, Heroku mostrará la URL de tu aplicación (por ejemplo, `https://tu-nombre-app.herokuapp.com`).
+
+Si Git solicita un nombre de usuario y contraseña, sigue estos pasos:
+
+1. **Obtén tu token de API de Heroku**:
+
+    ```bash
+    heroku auth:token
+    ```
+
+    Esto devolverá un token que usarás como contraseña.
+
+2. **Ingresa las credenciales**:
+    - Nombre de usuario: Tu correo electrónico asociado a Heroku.
+    - Contraseña: El token obtenido en el paso anterior.
 
 ---
 
-## Actualizar una aplicación en Heroku
+## 4. Actualizar la aplicación
 
-### 3.1. Realizar cambios en el proyecto
-
-Edita los archivos de tu proyecto localmente en tu computadora como lo harías normalmente. Si agregas nuevas dependencias, recuerda actualizarlas en el archivo `requirements.txt` con:
+### 4.1. Realiza los cambios en tu código
+Edita los archivos necesarios localmente. Si agregas nuevas dependencias, no olvides actualizarlas en `requirements.txt` con:
 
 ```bash
 pip freeze > requirements.txt
 ```
 
-### 3.2. Confirmar los cambios con Git
-
-Guarda tus actualizaciones en Git ejecutando los siguientes comandos:
+### 4.2. Confirma los cambios en Git
+Guarda tus actualizaciones en Git con estos comandos:
 
 ```bash
 git add .
 git commit -m "Descripción breve de los cambios"
 ```
 
-### 3.3. Subir los cambios a Heroku
-
-Envía tus actualizaciones a Heroku con este comando:
+### 4.3. Sube los cambios a Heroku
+Envía tus actualizaciones con:
 
 ```bash
 git push heroku main
 ```
 
-Heroku detectará automáticamente los cambios, reconstruirá tu aplicación y la desplegará con las actualizaciones.
+Heroku reconstruirá y desplegará tu aplicación automáticamente.
 
 ---
 
-## Notas adicionales
+## 5. Notas adicionales
 
-- **Depuración:** Si encuentras errores durante el despliegue, consulta los registros de Heroku con:
+- **Dominio personalizado**: Si configuras un dominio personalizado, asegúrate de actualizar los registros DNS en tu proveedor de dominios según las instrucciones de Heroku.
+- **Logs de Heroku**: Si encuentras problemas, verifica los registros con:
 
-  ```bash
-  heroku logs --tail
-  ```
+    ```bash
+    heroku logs --tail
+    ```
 
-- **SSL:** Para habilitar HTTPS en tu dominio personalizado, configura un certificado SSL desde el panel de Heroku.
+- **Plan gratuito**: Aunque Heroku tiene un plan gratuito, este tiene límites de uso. Considera actualizar a un plan de pago si tu aplicación necesita más recursos.
 
-- **Planes de Heroku:** Aunque el plan gratuito es suficiente para muchas aplicaciones, considera actualizar a un plan de pago si necesitas más recursos.
+---
 
-- **Cuidado con las dependencias:** Verifica regularmente que las versiones de tus dependencias sean compatibles entre sí.
-
+Con esta guía, deberías poder desplegar y mantener tu aplicación en Heroku sin problemas. Si necesitas más detalles o encuentras algún inconveniente, no dudes en buscar soporte adicional.
